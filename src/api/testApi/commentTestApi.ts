@@ -1,86 +1,100 @@
 //make testapi for comment
-import { CommentApi } from "../interfaces/commentApi.interface";
-import comment_list from "../mocks/commentApi.mocks";
-import { CommentContent } from "../interfaces/commentApi.interface";
-import { UserId } from "../interfaces/userApi.interface";
 import {
-  PostCommentParams,
-  UpdateCommentParams,
-  DeleteCommentParams,
-} from "../interfaces/commentApi.interface";
+  CreateCommentDto,
+  CreateReplyDto,
+  DeleteCommentResponse,
+  QueryCommentDto,
+  QueryReplyDto,
+  UpdateCommentDto,
+  UpdateCommentResponse,
+} from "../dtos/comment.dto";
+import { CommentApi } from "../interfaces/commentApi.interface";
+import comment_list, {
+  commentList,
+  commentState,
+  replyList,
+} from "../mocks/commentApi.mock";
+import { SigningState } from "../mocks/state.mcok";
 
-let counter = 10;
-const Comment_list: { [key: number]: CommentContent } = comment_list;
+import statusInfo from "../interfaces/statusInfo.json";
+import Sign from "../../pages/sign/Sign";
+
 const commentTestApi: CommentApi = {
-  get_user_comments: async ({ user_id }: UserId): Promise<CommentContent[]> => {
-    let comments: CommentContent[] = [];
-    for (const k in Comment_list) {
-      if (Comment_list[k].user_id === user_id) comments.push(Comment_list[k]);
-    }
-    return comments;
-  },
-
-  post_comment: async ({
-    user_id,
-    rep_id,
-    text,
-    IsReply,
-    reply_to,
-  }: PostCommentParams): Promise<UserId> => {
+  createComment: async (
+    comment: CreateCommentDto
+  ): Promise<QueryCommentDto> => {
     return new Promise((resolve) => {
-      //Temperliy comment_id started at 10
-      counter++;
       setTimeout(() => {
-        console.log("comment list", Comment_list);
-        const created_at = new Date();
-        const updated_at = new Date();
-        Comment_list[counter] = {
-          rep_id: rep_id,
-          comment_id: counter,
-          created_at,
-          updated_at,
-          user_id,
-          text,
-          IsReply,
-          reply_to: reply_to,
+        if (SigningState.uid !== comment.author)
+          return Promise.reject(statusInfo.fail.Unauthorized);
+        const newComment: QueryCommentDto = {
+          id: commentState.nextCid,
+          postId: comment.postId,
+          author: SigningState.uid,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          content: comment.content,
+          likenum: 0,
+          mentions: [],
         };
-        console.log("comment", Comment_list[counter]);
-        return resolve({ user_id });
+        commentList.push(newComment);
+        commentState.nextCid += 1;
       }, 500);
     });
   },
-  update_comment: async ({
-    user_id,
-    comment_id,
-    comment,
-  }: UpdateCommentParams): Promise<UserId> => {
-    Comment_list[comment_id] = { ...Comment_list[comment_id], ...comment };
-    return { user_id };
+  createReply: async (reply: CreateReplyDto): Promise<QueryReplyDto> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (SigningState.uid !== reply.author)
+          return Promise.reject(statusInfo.fail.Unauthorized);
+        const newReply: QueryReplyDto = {
+          id: commentState.nextCid,
+          parentId: reply.parentId,
+          author: SigningState.uid,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          content: reply.content,
+          likenum: 0,
+          mentions: [],
+        };
+        replyList.push(newReply);
+        commentState.nextCid += 1;
+      }, 500);
+    });
   },
-  delete_comment: async ({
-    user_id,
-    comment_id,
-  }: DeleteCommentParams): Promise<UserId> => {
-    delete Comment_list[comment_id];
-    return { user_id };
-  },
-  get_rep_comments: function (rep_id: number): Promise<CommentContent[]> {
-    let comments: CommentContent[] = [];
-    for (const k in Comment_list) {
-      if (Comment_list[k].rep_id === rep_id && Comment_list[k].IsReply == false)
-        comments.push(Comment_list[k]);
+  updateComment: async (
+    comment: UpdateCommentDto
+  ): Promise<UpdateCommentResponse> => {
+    if (SigningState.uid !== comment.author)
+      return Promise.reject(statusInfo.fail.Unauthorized);
+    let cidx = commentList.findIndex(
+      (c) => c.id === comment.id && c.author === comment.author
+    );
+    if (cidx == -1) {
+      cidx = replyList.findIndex(
+        (c) => c.id === comment.id && c.author === comment.author
+      );
+      if (cidx == -1) return Promise.reject(statusInfo.fail.Unauthorized);
+      replyList[cidx].content = comment.content;
+    } else {
+      commentList[cidx].content = comment.content;
     }
-    return Promise.resolve(comments);
+    return { count: 1 };
   },
-  get_reply_comments: function (comment_id: number): Promise<CommentContent[]> {
-    let comments: CommentContent[] = [];
-
-    for (const k in Comment_list) {
-      if (Comment_list[k].reply_to === comment_id) {
-        comments.push(Comment_list[k]);
-      }
+  deleteComment: async (cid: number): Promise<DeleteCommentResponse> => {
+    let cidx = commentList.findIndex(
+      (c) => c.id === cid && c.author === SigningState.uid
+    );
+    if (cidx == -1) {
+      cidx = replyList.findIndex(
+        (c) => c.id === cid && c.author === SigningState.uid
+      );
+      if (cidx == -1) return { count: 0 };
+      replyList.splice(cidx, 1);
+    } else {
+      commentList.splice(cidx, 1);
     }
-    return Promise.resolve(comments);
+    return { count: 1 };
   },
 };
 export default commentTestApi;
