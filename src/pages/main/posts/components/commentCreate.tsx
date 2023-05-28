@@ -1,4 +1,4 @@
-import { Button, Card, Input, useDisclosure } from "@chakra-ui/react";
+import { Button, Card, Flex, Input, useDisclosure } from "@chakra-ui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import commentApi from "../../../../api/commentApi";
 import useUserStore from "../../../../store/user.zustand";
@@ -8,7 +8,6 @@ import {
   CreateCommentDto,
   CreateReplyDto,
 } from "../../../../api/dtos/comment.dto";
-import { type } from "os";
 
 interface CommentCreateProps {
   postId?: number;
@@ -26,7 +25,7 @@ const CommentCreate = ({ postId, parentId, onClose }: CommentCreateProps) => {
   const CommentEdit = css`
     border: 0px solid black;
     border-radius: 5px;
-    padding: 10px;
+    padding: 1.5em;
   `;
   // useForm을 이용하여 form을 관리
   const { register, handleSubmit, reset } = useForm();
@@ -99,23 +98,25 @@ const CommentCreate = ({ postId, parentId, onClose }: CommentCreateProps) => {
   return (
     <>
       <form onSubmit={handleSubmit(save)}>
-        <Input
-          css={CommentEdit}
-          placeholder="write the reply"
-          {...register("NewComment")}
-          backgroundColor="white"
-        />
-        <Button
-          isLoading={createCommentLoading && createReplyLoading}
-          size="sm"
-          type="submit"
-          {...buttonProps}
-          variant="solid"
-          display="inline-block"
-          alignSelf="end"
-        >
-          Save
-        </Button>
+        <Flex direction={"column"}>
+          <Input
+            css={CommentEdit}
+            placeholder="write the reply"
+            {...register("NewComment")}
+            backgroundColor="white"
+          />
+          <Button
+            isLoading={createCommentLoading && createReplyLoading}
+            size="sm"
+            type="submit"
+            {...buttonProps}
+            variant="solid"
+            display="inline-block"
+            alignSelf="end"
+          >
+            Write
+          </Button>
+        </Flex>
       </form>
     </>
   );
