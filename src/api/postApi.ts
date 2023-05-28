@@ -13,7 +13,7 @@ const postApi: PostApi = {
       return postTestApi.getUserPosts({ uid, skip });
     }
     const res = await axios.get(
-      LIFTHUS_API_URL + `/post/query/post/${uid}/${skip}`,
+      LIFTHUS_API_URL + `/post/query/post/user/${uid}/${skip}`,
       {
         withCredentials: true,
       }
@@ -46,6 +46,19 @@ const postApi: PostApi = {
       data: { pid },
       withCredentials: true,
     });
+    return res.data;
+  },
+  likePost: async (pid: number) => {
+    if (process.env.NODE_ENV === "development") {
+      return postTestApi.likePost(pid);
+    }
+    const res = await axios.post(
+      LIFTHUS_API_URL + `/post/post/like/${pid}`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
     return res.data;
   },
 };

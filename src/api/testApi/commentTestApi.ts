@@ -9,15 +9,6 @@ import {
   UpdateCommentResponse,
 } from "../dtos/comment.dto";
 import { CommentApi } from "../interfaces/commentApi.interface";
-import comment_list, {
-  commentList,
-  commentState,
-  replyList,
-} from "../mocks/commentApi.mock";
-import { SigningState } from "../mocks/state.mcok";
-
-import statusInfo from "../interfaces/statusInfo.json";
-import Sign from "../../pages/sign/Sign";
 import axios from "axios";
 import { LIFTHUS_API_URL } from "../../common/routes";
 
@@ -64,6 +55,20 @@ const commentTestApi: CommentApi = {
         Authorization: lst,
       },
     });
+    return res.data;
+  },
+  likeComment: async (cid: number): Promise<number> => {
+    const lst = localStorage.getItem("lifthus_st");
+    const res = await axios.post(
+      LIFTHUS_API_URL + `/post/comment/like/${cid}`,
+      {},
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: lst,
+        },
+      }
+    );
     return res.data;
   },
 };
