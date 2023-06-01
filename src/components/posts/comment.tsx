@@ -1,4 +1,4 @@
-import { ThemeColor } from "../../styles/theme.style";
+import { ThemeColor } from "../../common/styles/theme.style";
 import {
   Avatar,
   Box,
@@ -6,25 +6,28 @@ import {
   Spinner,
   Textarea,
   useDisclosure,
+  Link as LinkChakra,
 } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import { Flex, Text } from "@chakra-ui/layout";
 import { Button } from "@chakra-ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import commentApi from "../../../api/commentApi";
+import commentApi from "../../api/commentApi";
 import { useEffect, useRef, useState } from "react";
-import ReplyList from "./replyList";
-import userApi from "../../../api/userApi";
-import CommentCreate from "./commentCreate";
+
+import userApi from "../../api/userApi";
 import {
   QueryCommentDto,
   QueryReplyDto,
   UpdateCommentDto,
-} from "../../../api/dtos/comment.dto";
-import useUserStore from "../../../store/user.zustand";
-import { commentFoldStandard } from "../../constraints";
-import { GetUserInfoDto } from "../../../api/dtos/user.dto";
+} from "../../api/dtos/comment.dto";
+import useUserStore from "../../store/user.zustand";
+import { commentFoldStandard } from "../../common/constraints";
+import { GetUserInfoDto } from "../../api/dtos/user.dto";
 import { CheckIcon, CloseIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import ReplyList from "./replyList";
+import CommentCreate from "./commentCreate";
+import { Link } from "react-router-dom";
 
 interface CommentProps {
   comment: QueryCommentDto | QueryReplyDto;
@@ -204,9 +207,11 @@ const Comment = ({ comment }: CommentProps) => {
         {/* Comment_id {comment.comment_id} */}
         <Flex flex="1" gap="2" alignItems="center" flexWrap="wrap">
           <Avatar size="sm" name={authorname} src={profileImage} />
-          <Text as="b" fontSize="sm" color="white">
-            {authorname}
-          </Text>
+          <LinkChakra as={Link} to={`/profile/${authorname}`} color="white">
+            <Text as="b" fontSize="sm" color="white">
+              {authorname}
+            </Text>
+          </LinkChakra>
         </Flex>
         <Text color="gray.400" fontSize="sm">
           {updatedAt == null
@@ -314,7 +319,7 @@ const Comment = ({ comment }: CommentProps) => {
               <Button
                 variant="ghost"
                 color="white"
-                isLoading={deleteIsLoading}
+                isLoading={EditIsLoading}
                 _hover={{ bg: ThemeColor.backgroundColorDarker }}
                 onClick={() => {
                   setCommentEdit(true);

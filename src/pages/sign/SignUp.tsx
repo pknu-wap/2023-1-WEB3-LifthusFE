@@ -7,22 +7,12 @@ import FormInput, {
 
 import Logo from "../../common/components/Logo";
 import { password_limit } from "../../common/constraints";
-import { useLocation, useNavigate } from "react-router-dom";
-import authApi from "../../api/authApi";
 
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { SignParams } from "../../api/interfaces/authApi.interface";
-import BlueSpinner from "../../common/components/spinners/BlueSpinner";
-import { StatusInfo } from "../../api/interfaces/statusInfo.interface";
-import statusInfo from "../../api/interfaces/statusInfo.json";
+import { useForm } from "react-hook-form";
 import SubmitLink from "../../common/components/links/SubmitLink";
 
 const SignUp = () => {
   const { t, i18n } = useTranslation();
-
-  let navigate = useNavigate();
-  const { pathname } = useLocation();
 
   /* hook-form */
   const { register, handleSubmit, watch, getValues } =
@@ -32,34 +22,10 @@ const SignUp = () => {
   const [failed, setFailed] = useState(false);
   const [fid, setFid] = useState(false);
 
-  /* api */
-  const { mutate, isLoading } = useMutation(
-    ({ username, password }: SignParams) => {
-      return authApi.signUpLocal({
-        username,
-        password,
-      });
-    },
-    {
-      onSuccess: () => {
-        navigate("/sign/in", { state: { from: pathname } });
-      },
-      onError: (err: StatusInfo) => {
-        if (err === statusInfo.fail.Conflict) setFid(true);
-        else setFailed(true);
-      },
-    }
-  );
-
-  // onSubmit
-  const onSubmit: SubmitHandler<IFormInputValues> = () => {
-    mutate({ username: getValues("id"), password: getValues("password") });
-  };
-
   return (
     <>
       <Logo to="/sign" />
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(() => {})}>
         <FormInput
           label={t("sign.ID")}
           placeholder="ID"
@@ -117,12 +83,9 @@ const SignUp = () => {
         <div>&nbsp;</div>
         {(watch("id") || "").length >= password_limit.min &&
           (watch("check") || "") === (watch("password") || "") &&
-          (watch("password") || "").length >= password_limit.min &&
-          (isLoading ? (
-            <BlueSpinner />
-          ) : (
+          (watch("password") || "").length >= password_limit.min && (
             <SubmitLink>{t("sign.SignUp")}</SubmitLink>
-          ))}
+          )}
         {failed && !fid && (
           <div style={{ fontSize: "0.7em" }}>{t("sign.signUp_error")}</div>
         )}

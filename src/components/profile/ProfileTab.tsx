@@ -24,9 +24,12 @@ import {
 
 import CalendarHeatmap from "react-calendar-heatmap";
 import { Avatar, FormLabel } from "@chakra-ui/react";
-import { ThemeColor } from "../../../../common/styles/theme.style";
+import ProfileSetting from "./profileTab/ProfileSetting";
+import { ThemeColor } from "../../common/styles/theme.style";
+import { GetUserInfoDto } from "../../api/dtos/user.dto";
+import ProfileContact from "./profileTab/ProfileContact";
 
-const ProfileTab = () => {
+const ProfileTab = ({ user }: { user: GetUserInfoDto }) => {
   // later query last rec
   const sbd_total = 460; // s + b + d
   return (
@@ -140,48 +143,7 @@ const ProfileTab = () => {
           </div>
         </TabPanel>
         <TabPanel>
-          <Card
-            borderRadius={"1em"}
-            bgColor={ThemeColor.backgroundColor}
-            color={"white"}
-          >
-            <CardBody>
-              <Stack divider={<StackDivider />} spacing="4">
-                <Box>
-                  <Heading size="xs" textTransform="uppercase">
-                    #ID
-                  </Heading>
-                  <Text pt="2" fontSize="sm">
-                    #12a2g
-                  </Text>
-                </Box>
-                <Box>
-                  <Heading size="xs" textTransform="uppercase">
-                    🏢 Company
-                  </Heading>
-                  <Text pt="2" fontSize="sm">
-                    PKNU
-                  </Text>
-                </Box>
-                <Box>
-                  <Heading size="xs" textTransform="uppercase">
-                    🗺️ Location
-                  </Heading>
-                  <Text pt="2" fontSize="sm">
-                    Busan
-                  </Text>
-                </Box>
-                <Box>
-                  <Heading size="xs" textTransform="uppercase">
-                    ☏ Contact
-                  </Heading>
-                  <Text pt="2" fontSize="sm">
-                    lifthus531@gmail.com
-                  </Text>
-                </Box>
-              </Stack>
-            </CardBody>
-          </Card>
+          <ProfileContact user={user} />
         </TabPanel>
         <TabPanel>
           <FormLabel textAlign={"center"} fontSize="1em" fontWeight={"bold"}>
@@ -299,7 +261,9 @@ const ProfileTab = () => {
             </Stat>
           </StatGroup>
         </TabPanel>
-        <TabPanel>프로필 설정</TabPanel>
+        <TabPanel>
+          <ProfileSetting />
+        </TabPanel>
       </TabPanels>
     </Tabs>
   );
