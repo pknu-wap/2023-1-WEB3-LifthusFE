@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
-import Header from "../../components/Header";
-import HeatBoxChart from "../../components/HeatBoxChart";
+import HeatBoxChart from "../..visual/nivo_heat/components";
 
 const Heat = () => {
   return (

@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
 import { ResponsiveCalendar } from '@nivo/calendar';
-import { mockHeatBoxData as data } from "../data/mockData";
+import { mockHeatBoxData as data } from "..visual/data/mockData";
 
 const HeatBoxChart = ({ isDashboard = false }) => {
     const theme = useTheme();
