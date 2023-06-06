@@ -13,6 +13,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import Header from "../../components/visual/Header";
 import { tokens } from "../../theme";
 
 const Calendar = () => {
