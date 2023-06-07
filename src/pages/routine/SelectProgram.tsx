@@ -28,6 +28,7 @@ import useProgramStore, {
   useProgramPlanStore,
 } from "../../store/program.zustand";
 import { programList } from "../../api/mocks/program.mock";
+import BasicPageLayout from "../../common/components/layouts/BasicPageLayout";
 const SelectProgram = () => {
   const searchResult: programDB[] = programList;
   //현재 선택한 프로그램의 정보 저장하는 전역 state
@@ -68,13 +69,26 @@ const SelectProgram = () => {
 
   return (
     <>
-      <div>
-        <Tabs isFitted variant="unstyled">
+      <BasicPageLayout>
+        <Tabs isFitted variant="unstyled" width="100%">
           <TabList>
-            <Tab _selected={{ color: "white", bg: "#9298E2" }} fontSize="3vw">
+            <Tab
+              borderRadius="5%"
+              padding="5% 10%"
+              _selected={{ color: "white", bg: "#9298E2" }}
+              fontSize="0.7em"
+              fontWeight="bold"
+            >
               나의 프로그램
             </Tab>
-            <Tab _selected={{ color: "white", bg: "#9298E2" }} fontSize="3vw">
+            <Tab
+              borderRadius="5%"
+              padding="5% 10%"
+
+              _selected={{ color: "white", bg: "#9298E2" }}
+              fontSize="0.7em"
+              fontWeight="bold"
+            >
               프로그램 검색
             </Tab>
           </TabList>
@@ -85,12 +99,11 @@ const SelectProgram = () => {
             <TabPanel>
               <form>
                 <Flex>
-                  <SearchIcon
-                    marginRight="0.4em"
-                    height="100%"
-                    alignSelf={"center"}
+                  <Input
+                    bg={ThemeColor.backgroundColorDarker}
+                    type="text"
+                    placeholder="프로그램 검색"
                   />
-                  <Input type="text" placeholder="프로그램 검색" />
                 </Flex>
               </form>
               <Box>
@@ -115,23 +128,36 @@ const SelectProgram = () => {
                   <Card
                     bg={changeResultColor(selectedResult)}
                     onClick={() => handleResultClick(selectedResult)}
-                    marginY="0.5em"
+                    marginY="1em"
                     css={CardStyle}
                   >
                     <div>
-                      <Flex direction={"row"} margin="0.3em">
-                        <div>
-                          <Flex>
-                            <Text fontSize="ms" fontWeight={"bold"}>
-                              {searchResult[selectedResult].name}
-                            </Text>
-                            <Text fontSize="ms" paddingLeft="0.5em">
-                              {"by" + searchResult[selectedResult].author}
-                            </Text>
-                          </Flex>
-                        </div>
+                      <Flex
+                        direction={"row"}
+                        margin="0.3em"
+                        alignItems={"center"}
+                      >
+                        <Flex alignItems={"center"}>
+                          <Text
+                            fontSize="2rem"
+                            fontWeight={"bold"}
+                            paddingLeft="0.5rem"
+                          >
+                            {searchResult[selectedResult].name}
+                          </Text>
+                          <Text fontSize="0.7rem" paddingLeft="0.7rem">
+                            {"by"}
+                          </Text>
+                          <Text
+                            fontSize="0.7rem"
+                            paddingLeft="0.1rem"
+                            fontWeight="bold"
+                          >
+                            {searchResult[selectedResult].author}
+                          </Text>
+                        </Flex>
                       </Flex>
-                      <Box float="right">
+                      <Box float="right" fontSize="1rem" marginRight="1em" marginBottom={"1em"}>
                         👍
                         {searchResult[selectedResult].starnum}
                         📌
@@ -145,8 +171,13 @@ const SelectProgram = () => {
                     result={searchResult[selectedResult]}
                   />
 
-                  <Flex alignSelf="center" justifyContent={"space-between"}>
+                  <Flex
+                    alignSelf="center"
+                    justifyContent={"space-between"}
+                    borderY={`2px solid ${ThemeColor.backgroundColorDarker}`}
+                  >
                     <Button
+                      padding="10%"
                       bg={ThemeColor.backgroundColor}
                       flexGrow={1}
                       _hover={{
@@ -158,6 +189,8 @@ const SelectProgram = () => {
                       프로그램 시작
                     </Button>
                     <Button
+                      padding="10%"
+                      borderRadius={"0px"}
                       onClick={goDetailRoutine}
                       bg={ThemeColor.backgroundColor}
                       flexGrow={1}
@@ -173,7 +206,7 @@ const SelectProgram = () => {
             </TabPanel>
           </TabPanels>
         </Tabs>
-      </div>
+      </BasicPageLayout>
     </>
   );
 };
