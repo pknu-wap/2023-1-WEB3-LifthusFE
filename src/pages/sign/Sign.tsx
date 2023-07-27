@@ -8,30 +8,33 @@ import BlueLink from "../../common/components/links/BlueLink";
 
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
-import axios from "axios";
-import { useMutation } from "@tanstack/react-query";
 import BlueSpinner from "../../common/components/spinners/BlueSpinner";
 import {
   HUS_GOOGLE_LOGIN_ENDPOINT,
-  HUS_SESSION_REVOKE_ENDPOINT,
+  LIFTHUS_FRONT_URL,
 } from "../../common/routes";
-import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import authApi from "../../api/authApi";
 
 const Sign = () => {
   const { t, i18n } = useTranslation();
 
-  //if the user access Sign page, all the sessions and tokens will be revoked.
-  const { isLoading, mutate } = useMutation(async () => {
-    const res = await axios.delete(HUS_SESSION_REVOKE_ENDPOINT, {
-      withCredentials: true,
-    });
-    if (res.status === 200) console.log("hus session removed");
-  });
+  // const { isLoading, mutate } = useMutation(async () => {
+  //   const res = await axios.delete(HUS_SESSION_REVOKE_ENDPOINT, {
+  //     withCredentials: true,
+  //   });
+  //   if (res.status === 200) console.log("hus session removed");
+  // });
 
-  // execute only once
-  useEffect(() => {
-    mutate();
-  }, []);
+  // // execute only once
+  // useEffect(() => {
+  //   mutate();
+  // }, []);
+
+  const { data: csid, isLoading } = useQuery({
+    queryKey: ["sid"],
+    queryFn: () => authApi.getSID(),
+  });
 
   return (
     <GoogleOAuthProvider clientId="1028507845637-07t65vf8fs49o4dpaelvefgbj8ov56pn.apps.googleusercontent.com">
@@ -47,7 +50,10 @@ const Sign = () => {
         <GoogleLogin
           text="continue_with"
           ux_mode="redirect"
-          login_uri={HUS_GOOGLE_LOGIN_ENDPOINT}
+          login_uri={
+            HUS_GOOGLE_LOGIN_ENDPOINT +
+            `?redirect=${encodeURIComponent(LIFTHUS_FRONT_URL)}&csid=${csid}`
+          }
           onSuccess={() => {}}
           auto_select={true}
         />
