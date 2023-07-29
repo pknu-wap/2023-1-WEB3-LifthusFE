@@ -5,7 +5,7 @@ export const USER_PROFILE_IMAGE_ROUTE = `${process.env.PUBLIC_URL}/assets/`;
 export const LIFTHUS_FRONT_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
-    : "https://lifthus.com";
+    : "https://www.lifthus.com";
 
 export const LIFTHUS_AUTH_URL =
   process.env.NODE_ENV === "development"
@@ -18,6 +18,12 @@ export const LIFTHUS_API_URL =
     ? //? "http://localhost:9091"
       "https://api.lifthus.com"
     : "https://api.lifthus.com";
+
+export const LIFTHUS_ERR_URL =
+  process.env.NODE_ENV === "development"
+    ? //? "http://localhost:9091"
+      "https://www.lifthus.com/error"
+    : "https://www.lifthus.com/error";
 
 export const HUS_AUTH_URL =
   process.env.NODE_ENV === "development"

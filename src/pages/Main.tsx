@@ -1,11 +1,8 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-
-import ErrorPage from "./ErrorPage";
-
 import useUserStore from "../store/user.zustand";
 import Routine from "./routine/Routine";
-import BottomNav from "./BottomNav";
+import BottomNav from "../components/BottomNav";
 import ProfileRoute from "./profile/ProfileRoute";
 import Home from "./home/Home";
 import { Img } from "@chakra-ui/react";
@@ -32,7 +29,6 @@ const Main = () => {
         <Route path="routine/*" element={<Routine />} />
         <Route path="statistics" element={<Statistics />} />
         <Route path="profile/*" element={<ProfileRoute />} />
-        <Route path="*" element={<ErrorPage />} />
       </Routes>
       <BottomNav username={username} />
     </React.Fragment>
