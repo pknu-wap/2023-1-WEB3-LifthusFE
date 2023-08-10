@@ -8,19 +8,25 @@ import axios from "axios";
 import statusInfo from "./interfaces/statusInfo.json";
 
 import authTestApi from "./testApi/authTestApi";
-import { HUS_AUTH_URL, LIFTHUS_AUTH_URL } from "../common/routes";
+import {
+  HUS_AUTH_URL,
+  LIFTHUS_AUTH_URL,
+  LIFTHUS_ERR_URL,
+  LIFTHUS_SESSION_URL,
+} from "../common/routes";
+import { LIFTHUS_SERVICE_NAME } from "../common/llifthus";
 
 const authApi: AuthApi = {
   updateSession: async (): Promise<SessionResponse> => {
-    if (process.env.NODE_ENV === "development") {
-      return await authTestApi.updateSession();
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   return await authTestApi.updateSession();
+    // }
     return await updateSession();
   },
   getSID: async (): Promise<string> => {
-    if (process.env.NODE_ENV === "development") {
-      return await authTestApi.getSID();
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   return await authTestApi.getSID();
+    // }
     try {
       const res = await axios.get(LIFTHUS_AUTH_URL + "/auth/sid", {
         withCredentials: true,
@@ -32,9 +38,9 @@ const authApi: AuthApi = {
     }
   },
   signOut: async (): Promise<void> => {
-    if (process.env.NODE_ENV === "development") {
-      return await authTestApi.signOut();
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //   return await authTestApi.signOut();
+    // }
     try {
       const res = await axios.patch(
         LIFTHUS_AUTH_URL + "/auth/session/signout",
@@ -66,9 +72,14 @@ const authApi: AuthApi = {
  * @throws {Error} Unexpected status code
  */
 const updateSession = async (): Promise<SessionResponse> => {
+  const lst = localStorage.getItem("lifthus_st");
+  if (lst) {
+    sessionStorage.setItem("lifthus_st", lst);
+    localStorage.removeItem("lifthus_st");
+  }
   try {
     // update session
-    const res = await axios.get(LIFTHUS_AUTH_URL + "/auth/session", {
+    const res = await axios.get(LIFTHUS_SESSION_URL, {
       withCredentials: true,
     });
     // depending on the status code, handle the response
@@ -82,7 +93,16 @@ const updateSession = async (): Promise<SessionResponse> => {
         return {};
       /* Created, redirect to Cloudhus to connect both sessions. */
       case statusInfo.succ.Created.code:
-        const sid = res.data; // new session id sent from Lifthus
+        // redirect to Cloudhus to connect both sessions.
+        const currentURL = window.location.href;
+        const sid = res.data;
+        if (sid) {
+          // if new session is created, redirect to Cloudhus and connect to the hussession.
+          window.location.href = `${HUS_AUTH_URL}/auth/hus?service=${LIFTHUS_SERVICE_NAME}&sid=${sid}&redirect=${encodeURIComponent(
+            currentURL
+          )}&fallback=${LIFTHUS_ERR_URL}`;
+        }
+        // not reachable below
         return { created: { sid } };
       /* InternalServerError, try once more. */
       case statusInfo.fail.InternalServerError.code:
@@ -94,58 +114,5 @@ const updateSession = async (): Promise<SessionResponse> => {
     return Promise.reject(err);
   }
 };
-
-// /**
-//  * updateSession does conduct many steps to establish and maintain the session.
-//  * @returns SessionResponse
-//  */
-// const updateSession = async (): Promise<SessionResponse> => {
-//   try {
-//     // getting new session
-//     let res = await axios.get(LIFTHUS_AUTH_URL + "/auth/session/new", {
-//       withCredentials: true,
-//     });
-//     console.log(res, res.data);
-//     // if ok, server returns uid and maintaining session
-//     if (res.status == statusInfo.succ.Ok.code)
-//       return { uid: res.data.uid, username: res.data.usename };
-//     // if it is not ok or created, return empty string
-//     if (res.status != statusInfo.succ.Created.code)
-//       return { uid: undefined, username: "" };
-//     console.log("new session created");
-
-//     // if it is created, server returns sid
-//     const sid = res.data;
-//     // checking hus session
-//     res = await axios.post(
-//       HUS_AUTH_URL + `/auth/session/check/lifthus/` + sid,
-//       {},
-//       { withCredentials: true }
-//     );
-//     if (res.status != statusInfo.succ.Ok.code)
-//       return { uid: undefined, username: "" };
-//     console.log("hus session checked");
-
-//     // if hus says ok, request signed token from lifthus
-//     res = await axios.get(LIFTHUS_AUTH_URL + "/auth/session/sign", {
-//       withCredentials: true,
-//     });
-//     console.log("got signed token");
-//     // if it's ok, server returns uid
-//     return { uid: res.data.uid, username: res.data.username };
-//   } catch (err) {
-//     if (axios.isAxiosError(err)) {
-//       const rstatus = err.response?.status;
-//       const rdata = err.response?.data;
-//       if (rstatus === statusInfo.fail.Unauthorized.code && rdata === "retry") {
-//         // for the case that Hus session checked but expired.
-//         console.log("retrying");
-//         return authApi.updateSession();
-//       }
-//     }
-//     console.log(err);
-//     return { uid: undefined, username: "" };
-//   }
-// };
 
 export default authApi;

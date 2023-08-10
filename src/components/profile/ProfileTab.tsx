@@ -2,7 +2,7 @@ import React from "react";
 
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/tabs";
 
-import { Box, Heading, Stack, StackDivider, Text } from "@chakra-ui/layout";
+import { Text } from "@chakra-ui/layout";
 import {
   Stat,
   StatArrow,
@@ -14,7 +14,6 @@ import {
 
 import "./calendar.css";
 
-import { Card, CardBody } from "@chakra-ui/card";
 import {
   CalendarIcon,
   DragHandleIcon,
@@ -96,36 +95,6 @@ const ProfileTab = ({ user }: { user: GetUserInfoDto }) => {
             }}
           />
           <div>
-            <Avatar
-              margin={"0.2em"}
-              name={"Powerlifter"}
-              bgColor={ThemeColor.basicColor}
-              src={
-                "https://pngimg.com/uploads/powerlifting/powerlifting_PNG44.png"
-              }
-              sx={{
-                "@media screen and (max-width: 350px)": {
-                  w: "2em",
-                  h: "2em",
-                },
-              }}
-            />
-
-            <Avatar
-              margin={"0.2em"}
-              name={"Powerlifter"}
-              bgColor={ThemeColor.basicColor}
-              src={
-                "https://pngimg.com/uploads/powerlifting/powerlifting_PNG44.png"
-              }
-              sx={{
-                "@media screen and (max-width: 350px)": {
-                  w: "2em",
-                  h: "2em",
-                },
-              }}
-            />
-
             <Avatar
               margin={"0.2em"}
               name={"Powerlifter"}

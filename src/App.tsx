@@ -1,24 +1,19 @@
-import React from "react";
-
 import styled from "@emotion/styled";
 import { ThemeColor } from "./common/styles/theme.style";
 
-import { Navigate, Route, Routes } from "react-router-dom";
-
-import Main from "./pages/Main";
-
 import useUserStore from "./store/user.zustand";
-import FirstPage from "./pages/sign/FirstPage";
-import Register from "./pages/register/Register";
 
 import authApi from "./api/authApi";
-import Pending from "./pages/pending/Pending";
 import userApi from "./api/userApi";
-import { HUS_AUTH_URL, LIFTHUS_ERR_URL } from "./common/routes";
-import {
-  SessionCreated,
-  SessionUserInfo,
-} from "./api/interfaces/authApi.interface";
+import { LIFTHUS_ERR_URL } from "./common/routes";
+import { SessionUserInfo } from "./api/interfaces/authApi.interface";
+import { axiosInterceptorSetter } from "./api/axios.interceptor";
+import { useQuery } from "@tanstack/react-query";
+import { Navigate, Route, Routes } from "react-router-dom";
+import Pending from "./pages/pending/Pending";
+import Main from "./pages/Main";
+import Register from "./pages/register/Register";
+import FirstPage from "./pages/sign/FirstPage";
 import ErrorPage from "./pages/error/ErrorPage";
 
 const AppStyled = styled.div`
@@ -32,33 +27,38 @@ const AppStyled = styled.div`
 `;
 
 const App = () => {
+  axiosInterceptorSetter();
+
   const setUserInfo = useUserStore((state) => state.setUserInfo);
   /* ===== automatic SSO ===== */
-  const currentURL = window.location.href;
-  console.log(currentURL, "!!");
-  if (!currentURL.startsWith(LIFTHUS_ERR_URL)) {
-    authApi.updateSession().then(async (res) => {
-      const created: SessionCreated | undefined = res.created;
+  const isErrorPage = window.location.href.startsWith(LIFTHUS_ERR_URL);
+  const { isLoading } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const res = await authApi.updateSession();
       const user: SessionUserInfo | undefined = res.user;
-      if (!!created) {
-        // if new session is created, redirect to Cloudhus and connect to the hussession.
-        window.location.href = `${HUS_AUTH_URL}/auth/hus?service=lifthus&sid=${
-          created.sid
-        }&redirect=${encodeURIComponent(
-          currentURL
-        )}&fallback=${LIFTHUS_ERR_URL}`;
-      } else if (!!user) {
+      if (!!user) {
         const userInfo = await userApi.getUserInfo({ uid: Number(user.uid) });
         setUserInfo(userInfo);
         console.log(userInfo, "user signed");
-      } else console.log("not signed");
-    });
-  }
+      }
+      return res;
+    },
+    refetchOnWindowFocus: false,
+    enabled: !isErrorPage,
+  });
 
   const uid = useUserStore((state) => state.uid);
   const registered = useUserStore((state) => state.registered);
 
-  return (
+  return isLoading ? (
+    <AppStyled>
+      <Routes>
+        <Route path="/*" element={<Pending />} />
+        <Route path="/error" element={<ErrorPage />} />
+      </Routes>
+    </AppStyled>
+  ) : (
     <AppStyled>
       <Routes>
         <Route path="/pending/*" element={<Pending />} />

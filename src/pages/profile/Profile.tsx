@@ -1,6 +1,5 @@
 import React, { Suspense } from "react";
 import { Route, Routes, useParams } from "react-router";
-import BasicPageLayoutNoMargin from "../../common/components/layouts/BasicPageLayout";
 import repsApi from "../../api/postApi";
 import userApi from "../../api/userApi";
 import { QueryErrorResetBoundary, useQuery } from "@tanstack/react-query";
@@ -13,6 +12,7 @@ import useUserStore from "../../store/user.zustand";
 import CreatePost from "../../components/posts/CreatePost";
 import ProfileCard from "../../components/profile/ProfileCard";
 import ProfileTab from "../../components/profile/ProfileTab";
+import Pending from "../pending/Pending";
 
 const Profile = () => {
   const username = useParams().username;
@@ -40,47 +40,45 @@ const Profile = () => {
 
   if (!!uid)
     return (
-      <BasicPageLayoutNoMargin>
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              fallbackRender={({ error, resetErrorBoundary }) => <ErrorPage />}
-              onReset={reset}
-            >
-              <Suspense fallback={<BlueSpinner />}>
-                <ProfileCard uid={uid} />
-              </Suspense>
-              <Suspense fallback={<BlueSpinner />}>
-                <Routes>
-                  <Route index element={<ProfileTab user={user} />} />
-                  <Route index element={<Posts posts={posts ? posts : []} />} />
-                  <Route
-                    path="following"
-                    element={<FollowList type="following" />}
-                  />
-                  <Route
-                    path="followers"
-                    element={<FollowList type="followers" />}
-                  />
-                </Routes>
-                <Routes>
-                  <Route
-                    index
-                    element={
-                      <>
-                        {clientUid === user.uid ? <CreatePost /> : null}
-                        <Posts posts={posts ? posts : []} />
-                      </>
-                    }
-                  />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
-      </BasicPageLayoutNoMargin>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            fallbackRender={({ error, resetErrorBoundary }) => <ErrorPage />}
+            onReset={reset}
+          >
+            <Suspense fallback={<BlueSpinner />}>
+              <ProfileCard uid={uid} />
+            </Suspense>
+            <Suspense fallback={<BlueSpinner />}>
+              <Routes>
+                <Route index element={<ProfileTab user={user} />} />
+                <Route index element={<Posts posts={posts ? posts : []} />} />
+                <Route
+                  path="following"
+                  element={<FollowList type="following" />}
+                />
+                <Route
+                  path="followers"
+                  element={<FollowList type="followers" />}
+                />
+              </Routes>
+              <Routes>
+                <Route
+                  index
+                  element={
+                    <>
+                      {clientUid === user.uid ? <CreatePost /> : null}
+                      <Posts posts={posts ? posts : []} />
+                    </>
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
     );
-  return <ErrorPage />;
+  return <Pending />;
 };
 
 export default Profile;
