@@ -1,18 +1,29 @@
 export interface RegisterInfo {
-  registerUsername?: string;
-  registerType?: string;
-  registerBodyWeight?: number;
-  registerHeight?: number;
-  registerSquat?: number;
-  registerBenchpress?: number;
-  registerDeadlift?: number;
+  username?: string;
+  type?: string;
+  bodyWeight?: number;
+  height?: number;
+  squat?: number;
+  benchpress?: number;
+  deadlift?: number;
 }
 
+export type RegisterNumberTypes =
+  | "bodyWeight"
+  | "height"
+  | "squat"
+  | "benchpress"
+  | "deadlift";
+
+export type RegisterNumberType = {
+  [key in RegisterNumberTypes]: number;
+};
+
 export type RegisterInfoStrings =
-  | "registerUsername"
-  | "registerType"
-  | "registerBodyWeight"
-  | "registerHeight"
-  | "registerSquat"
-  | "registerBenchpress"
-  | "registerDeadlift";
+  | "username"
+  | "type"
+  | "bodyWeight"
+  | "height"
+  | "squat"
+  | "benchpress"
+  | "deadlift";

@@ -10,34 +10,47 @@ import {
   User,
   Users,
 } from "../common/icons/NavIcons";
+import useUserStore from "../store/user.zustand";
 
-const BottomNav = ({ username }: { username: string }) => {
+const BottomNav = () => {
+  const uid = useUserStore((state) => state.uid);
+  const username = useUserStore((state) => state.username);
+
   const [activeNav, setActiveNav] = useState(2);
   return (
     // borderLeft: "none"
     <div style={{ height: "10vh" }}>
       <NavBar>
-        <NavLink to="/group" onClick={() => setActiveNav(0)}>
+        <NavLink to={!uid ? "/sign" : "/group"} onClick={() => setActiveNav(0)}>
           <NavItem active={true ? activeNav == 0 : false}>
             <Users />
           </NavItem>
         </NavLink>
-        <NavLink to="/statistics" onClick={() => setActiveNav(1)}>
+        <NavLink
+          to={!uid ? "/sign" : "/statistics"}
+          onClick={() => setActiveNav(1)}
+        >
           <NavItem active={true ? activeNav == 1 : false}>
             <StatGraph />
           </NavItem>
         </NavLink>
-        <NavLink to="/" onClick={() => setActiveNav(2)}>
+        <NavLink to={!uid ? "/" : "followings"} onClick={() => setActiveNav(2)}>
           <NavItem active={true ? activeNav == 2 : false}>
             <Home />
           </NavItem>
         </NavLink>
-        <NavLink to="/routine" onClick={() => setActiveNav(3)}>
+        <NavLink
+          to={!uid ? "/sign" : "/routine"}
+          onClick={() => setActiveNav(3)}
+        >
           <NavItem active={true ? activeNav == 3 : false}>
             <Dumbbell />
           </NavItem>
         </NavLink>
-        <NavLink to={`/profile/${username}`} onClick={() => setActiveNav(4)}>
+        <NavLink
+          to={!uid ? "/sign" : `/profile/${username}`}
+          onClick={() => setActiveNav(4)}
+        >
           <NavItem active={true ? activeNav == 4 : false}>
             <User />
           </NavItem>

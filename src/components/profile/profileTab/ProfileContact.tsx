@@ -11,36 +11,60 @@ import {
   StackDivider,
   Text,
 } from "@chakra-ui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { get } from "http";
-import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
 import { useForm, UseFormRegister } from "react-hook-form";
 import { GetUserInfoDto, UpdateUserInfoDto } from "../../../api/dtos/user.dto";
+import relationApi from "../../../api/relationApi";
 import userApi from "../../../api/userApi";
 import { ThemeColor } from "../../../common/styles/theme.style";
 import useUserStore from "../../../store/user.zustand";
 
-const ProfileContact = ({ user }: { user: GetUserInfoDto }) => {
+const ProfileContact = ({
+  userInfo,
+}: {
+  userInfo: GetUserInfoDto | undefined;
+}) => {
   const queryClient = useQueryClient();
+
+  const profileUid = userInfo?.uid;
 
   const { setUserInfo, uid } = useUserStore();
 
-  const [contactInfo, setContactInfo] = useState<UpdateUserInfoDto>({
-    uid: user.uid,
-    company: user.company,
-    location: user.location,
-    contact: user.contact,
-  });
+  const [contactInfo, setContactInfo] = useState<UpdateUserInfoDto | undefined>(
+    !profileUid
+      ? undefined
+      : {
+          uid: profileUid,
+          company: userInfo?.company,
+          location: userInfo?.location,
+          contact: userInfo?.contact,
+        }
+  );
+
+  useEffect(() => {
+    setContactInfo(
+      !profileUid
+        ? undefined
+        : {
+            uid: profileUid,
+            company: userInfo?.company,
+            location: userInfo?.location,
+            contact: userInfo?.contact,
+          }
+    );
+  }, [profileUid]);
 
   const { register, getValues } = useForm<UpdateUserInfoDto>();
 
   const { mutate: updateContact, isLoading } = useMutation({
     mutationFn: (data: UpdateUserInfoDto) => {
-      data.uid = user.uid;
+      if (!profileUid) return Promise.reject(new Error("undefined"));
+      data.uid = profileUid;
       return userApi.setUserInfo(data);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["user", { uid: user.uid }]);
+      queryClient.invalidateQueries(["user", { uid: profileUid }]);
       setUserInfo(data);
       setContactInfo(data);
     },
@@ -50,40 +74,87 @@ const ProfileContact = ({ user }: { user: GetUserInfoDto }) => {
     updateContact(getValues());
   };
 
+  // profile user's follower list
+  const { data: userFollowers } = useQuery({
+    queryKey: ["followers", { uid: userInfo?.uid }],
+    queryFn: () =>
+      !profileUid
+        ? Promise.reject(new Error("undefined"))
+        : relationApi.getUserFollowers({ uid: profileUid }),
+    enabled: !!userInfo?.uid,
+  });
+
+  // follow mutation
+  const { mutate: followUser, isLoading: followingLoading } = useMutation({
+    mutationFn: () =>
+      !profileUid
+        ? Promise.reject(new Error("undefined"))
+        : relationApi.followUser({ uid: profileUid }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["followers", { uid: profileUid }]);
+    },
+  });
+
+  // unfollow mutation
+  const { mutate: unfollowUser, isLoading: unfollowingLoading } = useMutation({
+    mutationFn: () =>
+      !profileUid
+        ? Promise.reject(new Error("undefined"))
+        : relationApi.unfollowUser({ uid: profileUid }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["followers", { uid: profileUid }]);
+    },
+  });
+
+  const { uid: clientUid } = useUserStore();
+
   return (
-    <Card
-      borderRadius={"1em"}
-      bgColor={ThemeColor.backgroundColor}
-      color={"white"}
-    >
-      <CardBody>
-        <Stack divider={<StackDivider />} spacing="4">
-          <Contact title="#ID" content={user.usercode} />
-          <Contact
-            {...register("company")}
-            title="🏢 Company"
-            content={contactInfo.company || ""}
-            change={uid === user.uid}
-            onSubmit={onSubmit}
-          />
-          <Contact
-            {...register("location")}
-            title="🗺️ Location"
-            content={contactInfo.location || ""}
-            change={uid === user.uid}
-            onSubmit={onSubmit}
-          />
-          <Contact
-            {...register("contact")}
-            title="☏ Contact"
-            content={contactInfo.contact || ""}
-            change={uid === user.uid}
-            onSubmit={onSubmit}
-          />
-        </Stack>
-        {isLoading && <Spinner />}
-      </CardBody>
-    </Card>
+    <>
+      <Card
+        borderRadius={"1em"}
+        bgColor={ThemeColor.backgroundColor}
+        color={"white"}
+      >
+        <CardBody>
+          <Stack divider={<StackDivider />} spacing="4">
+            <Contact title="#ID" content={userInfo?.usercode} />
+            <Contact
+              {...register("company")}
+              title="🏢 Company"
+              content={contactInfo?.company}
+              change={clientUid === profileUid}
+              onSubmit={onSubmit}
+            />
+            <Contact
+              {...register("location")}
+              title="🗺️ Location"
+              content={contactInfo?.location}
+              change={clientUid === profileUid}
+              onSubmit={onSubmit}
+            />
+            <Contact
+              {...register("contact")}
+              title="☏ Contact"
+              content={contactInfo?.contact}
+              change={clientUid === profileUid}
+              onSubmit={onSubmit}
+            />
+          </Stack>
+        </CardBody>
+      </Card>
+      {!!clientUid &&
+        clientUid !== profileUid &&
+        (userFollowers?.includes(clientUid) ? (
+          <Button variant="solid" onClick={() => unfollowUser()}>
+            {unfollowingLoading ? <Spinner /> : "Unfollow"}
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={() => followUser()}>
+            {followingLoading ? <Spinner /> : "Follow"}
+          </Button>
+        ))}
+      {isLoading && <Spinner />}
+    </>
   );
 };
 
@@ -91,7 +162,7 @@ export default ProfileContact;
 
 type ContactProps = {
   title: string;
-  content: string;
+  content?: string;
   change?: boolean;
   onSubmit?: () => void;
 };
@@ -105,7 +176,6 @@ const Contact = React.forwardRef<
     ref
   ) => {
     const [isEditing, setIsEditing] = useState(false);
-
     return (
       <Box
         _hover={
@@ -151,7 +221,7 @@ const Contact = React.forwardRef<
           </>
         ) : (
           <Text pt="2" fontSize="sm">
-            {content}
+            {content || <Spinner />}
           </Text>
         )}
       </Box>

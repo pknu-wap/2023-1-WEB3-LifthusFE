@@ -19,13 +19,13 @@ const RegisterConfirm = () => {
 
   const registerInfo = useRegisterStore((state) => ({
     uid: NaN,
-    username: state.registerUsername,
-    trainingType: state.registerType,
-    bodyWeight: state.registerBodyWeight,
-    height: state.registerHeight,
-    squat: state.registerSquat,
-    benchpress: state.registerBenchpress,
-    deadlift: state.registerDeadlift,
+    username: state.username,
+    trainingType: state.type,
+    bodyWeight: state.bodyWeight,
+    height: state.height,
+    squat: state.squat,
+    benchpress: state.benchpress,
+    deadlift: state.deadlift,
   }));
 
   if (uid) registerInfo["uid"] = uid;
